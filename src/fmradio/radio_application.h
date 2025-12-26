@@ -28,6 +28,8 @@ protected:
     void OnLoop() override;
 
 private:
+    void ChangeFrequency(uint8_t index);
+    
     QueueHandle_t queue_;
 
     std::string last_message_;

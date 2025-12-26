@@ -20,7 +20,9 @@ public:
 	void Init();
 	void SetFrequency(uint16_t frequency);
 	std::string GetFrequency();
-
+	bool IsStereo();
+	uint8_t GetRSSI();
+	
 };
 
 #endif

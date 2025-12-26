@@ -34,7 +34,7 @@
 
 // 外设
 #define CONFIG_USE_DISPLAY                  1   // 显示
-#define CONFIG_USE_AUDIO                    0   // 音频
+#define CONFIG_USE_AUDIO                    1   // 音频
 #define CONFIG_USE_FS                       0   // 文件系统
 #define CONFIG_USE_CAMERA                   0   // 摄像头
 

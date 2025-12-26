@@ -16,6 +16,7 @@
 #include "src/framework/board/button.h"
 #include "src/framework/display/display.h"
 #include "src/framework/led/led.h"
+#include "src/framework/audio/audio_codec.h"
 
 #include "board_config.h"
 
@@ -27,16 +28,19 @@ private:
     Button *prev_button_ = nullptr;
     Button *next_button_ = nullptr;
     Display *display_ = nullptr;
+    AudioCodec *audio_codec_ = nullptr;
     TaskHandle_t button_taskhandle_;
 
-    void InitializeDisplay();
     void InitializeButtons();
+    void InitializeDisplay();
+    void InitializeAudio();
     void InitializePeripherals();
 
 public:
     ESP32_DEVKIT();
 
     Display* GetDisplay() override { return display_; }
+    AudioCodec* GetAudioCodec() override { return audio_codec_; }
 
     void ButtonTick();
 };

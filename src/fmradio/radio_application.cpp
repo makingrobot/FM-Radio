@@ -32,6 +32,9 @@
 // 换成本地的FM台， 87.6 MHz = 8760 
 static const uint16_t kFMFreq[7] = { 8760, 9450, 9740, 10060, 10250, 10390, 10730 };
 
+static const std::string NVS_RADIO = "radio";
+static const std::string NVS_CHN_INDEX = "chn_index";
+
 void* create_application() {
     return new RadioApplication();
 }
@@ -44,7 +47,11 @@ RadioApplication::RadioApplication() : Application() {
 void RadioApplication::OnInit() {
     radio_ = new FMRadio();
     radio_->Init();
-    radio_->SetFrequency(kFMFreq[2]);
+
+    Settings sett(NVS_RADIO);
+    int chn_index = sett.GetInt(NVS_CHN_INDEX, 0);
+
+    radio_->SetFrequency(kFMFreq[chn_index]);
 }
 
 void RadioApplication::OnLoop() {
@@ -55,14 +62,12 @@ void RadioApplication::OnLoop() {
         if (receive == 1) {
             if (index_ > 0) {
                 index_--;
-                radio_->SetFrequency(kFMFreq[index_]);
-                Log::Info(TAG, "set frequency %.1f, index:%d", kFMFreq[index_] / 100.0f, index_);
+                ChangeFrequency(index_);
             }
         } else if (receive == 2) {
             if (index_ < sizeof(kFMFreq)-1) {
                 index_++;
-                radio_->SetFrequency(kFMFreq[index_]);
-                Log::Info(TAG, "set frequency %.1f, index:%d", kFMFreq[index_] / 100.0f, index_);
+                ChangeFrequency(index_);
             }
         }
         delay(100);
@@ -70,7 +75,8 @@ void RadioApplication::OnLoop() {
     
     U8g2Display *display = (U8g2Display*)Board::GetInstance().GetDisplay();
     display->SetStatus(std::format("FM: {0}", radio_->GetFrequency() ));
-    //display->GetWindow()->SetText(1, radio_->isStereo() ? "STEREO " : "MONO");
+    display->GetWindow()->SetText(1, std::format("RSSI: {0}", radio_->GetRSSI()) );
+    display->GetWindow()->SetText(2, radio_->IsStereo() ? "STEREO " : "MONO");
     delay(100);
 }
 
@@ -104,3 +110,10 @@ bool RadioApplication::OnSensorDataEvent(const std::string& sensor_name, const S
     return Application::OnSensorDataEvent(sensor_name, value);
 }
 
+void RadioApplication::ChangeFrequency(uint8_t index) {
+    radio_->SetFrequency(kFMFreq[index]);
+    Log::Info(TAG, "set frequency %.1f, index:%d", kFMFreq[index] / 100.0f, index);
+
+    Settings sett(NVS_RADIO, true);
+    sett.SetInt(NVS_CHN_INDEX, index);
+}

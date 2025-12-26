@@ -35,3 +35,15 @@ std::string FMRadio::GetFrequency() {
 	radio_->formatFrequency(s, sizeof(s));
 	return std::string(s);
 }
+
+bool FMRadio::IsStereo() {
+	RADIO_INFO info;
+	radio_->getRadioInfo(&info);
+	return info.stereo;
+}
+
+uint8_t FMRadio::GetRSSI() {
+	RADIO_INFO info;
+	radio_->getRadioInfo(&info);
+	return info.rssi;
+}
