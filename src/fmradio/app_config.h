@@ -1,3 +1,6 @@
+#include "config.h"
+#if FM_AUDIO_BASIC==1
+
 #ifndef _APP_CONFIG_H
 #define _APP_CONFIG_H
 
@@ -20,3 +23,5 @@
 
 
 #endif //_APP_CONFIG_H
+
+#endif

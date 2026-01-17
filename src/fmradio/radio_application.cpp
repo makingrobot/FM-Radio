@@ -3,6 +3,9 @@
  * 
  * Author: Billy Zhang（vx: billyzh）
  */
+#include "config.h"
+#if FM_AUDIO_BASIC==1
+
 #include "radio_application.h"
 #include "src/framework/sys/log.h"
 #include "src/framework/board/board.h"
@@ -117,3 +120,5 @@ void RadioApplication::ChangeFrequency(uint8_t index) {
     Settings sett(NVS_RADIO, true);
     sett.SetInt(NVS_CHN_INDEX, index);
 }
+
+#endif

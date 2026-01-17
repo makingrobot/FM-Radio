@@ -3,6 +3,8 @@
  * 
  * Author: Billy Zhang（vx: billyzh）
  */
+#include "config.h"
+#if FM_AUDIO_BASIC==1
 
 #include <Arduino.h>
 #include <Wire.h>
@@ -47,3 +49,5 @@ uint8_t FMRadio::GetRSSI() {
 	radio_->getRadioInfo(&info);
 	return info.rssi;
 }
+
+#endif

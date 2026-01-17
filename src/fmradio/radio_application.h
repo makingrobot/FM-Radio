@@ -3,6 +3,8 @@
  * 
  * Author: Billy Zhang（vx: billyzh）
  */
+#include "config.h"
+#if FM_AUDIO_BASIC==1
 
 #ifndef _RADIO_APPLICATION_H
 #define _RADIO_APPLICATION_H
@@ -41,3 +43,5 @@ private:
 };
 
 #endif //_RADIO_APPLICATION_H
+
+#endif

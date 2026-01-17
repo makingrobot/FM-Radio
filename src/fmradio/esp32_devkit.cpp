@@ -3,6 +3,9 @@
  * 
  * Author: Billy Zhang（vx: billyzh）
  */
+#include "config.h"
+#if FM_AUDIO_BASIC==1
+
 #include "esp32_devkit.h"
 
 #include <Arduino.h>
@@ -16,7 +19,6 @@
 #include "src/framework/sys/system_reset.h"
 #include "src/framework/board/i2c_device.h"
 #include "src/framework/led/gpio_led.h"
-#include "src/framework/audio/codecs/no_audio_codec.h"
 
 #define TAG "ESP32_DEVKIT"
 
@@ -34,26 +36,27 @@ ESP32_DEVKIT::ESP32_DEVKIT() : Board() {
 
     InitializeDisplay();
 
-    InitializeAudio();
-
     InitializePeripherals();
 
     Log::Info( TAG, "===== Board config completed. =====");
 }
 
 void ESP32_DEVKIT::ButtonTick() {
-    prev_button_->Tick();
-    next_button_->Tick();
+    for (const auto& pair : button_map()) {
+        pair.second->Tick();
+    }
 }
 
 void ESP32_DEVKIT::InitializeButtons() {
     Log::Info( TAG, "Init buttons ......");
 
-    prev_button_ = new OneButtonImpl(kPrevButton, PREV_BUTTON_PIN);
-    prev_button_->BindAction(ButtonAction::Click);
+    std::shared_ptr<Button> prev_button = std::make_shared<OneButtonImpl>(kPrevButton, PREV_BUTTON_PIN);
+    prev_button->BindAction(ButtonAction::Click);
+    AddButton(prev_button);
 
-    next_button_ = new OneButtonImpl(kNextButton, NEXT_BUTTON_PIN);
-    next_button_->BindAction(ButtonAction::Click);
+    std::shared_ptr<Button> next_button = std::make_shared<OneButtonImpl>(kNextButton, NEXT_BUTTON_PIN);
+    next_button->BindAction(ButtonAction::Click);
+    AddButton(next_button);
 
     xTaskCreate([](void* param) {
         ESP32_DEVKIT *board = (ESP32_DEVKIT *)param;
@@ -83,16 +86,10 @@ void ESP32_DEVKIT::InitializeDisplay() {
 
 }
 
-
-void ESP32_DEVKIT::InitializeAudio() {
-
-    Log::Info( TAG, "Init audio codec ......" );
-
-    // TODO：音频器件初始化
-}
-
 void ESP32_DEVKIT::InitializePeripherals() {
     
     Log::Info( TAG, "Init peripherals ......");
 
 }
+
+#endif

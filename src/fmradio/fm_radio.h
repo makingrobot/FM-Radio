@@ -3,6 +3,9 @@
  * 
  * Author: Billy Zhang（vx: billyzh）
  */
+#include "config.h"
+#if FM_AUDIO_BASIC==1
+
 #ifndef _FM_RADIO_H
 #define _FM_RADIO_H
 
@@ -24,5 +27,7 @@ public:
 	uint8_t GetRSSI();
 	
 };
+
+#endif  // _FM_AUDIO_H
 
 #endif
