@@ -12,7 +12,7 @@
 
 #define TAG "Sensor"
 
-Sensor::Sensor() {
+Sensor::Sensor(const std::string& name) : name_(name) {
 }
 
 Sensor::~Sensor() {
@@ -47,31 +47,41 @@ void Sensor::Stop() {
  */
 void Sensor::ReadData() {
     sensor_val_ = new SensorValue();
-    ReadValue(sensor_val_);
+    bool success = ReadValue(sensor_val_);
+    if (!success) {
+        return;
+    }
 
     if (on_newdata_callback_) {
+        // 定制处理
         on_newdata_callback_(*sensor_val_);
+    } else {
+        // 默认处理
+        auto& app = Application::GetInstance();
+        app.OnSensorDataEvent(name_, *sensor_val_);
     }
 
     delete sensor_val_;
 }
 
 /*********** AnalogSensor **************/
-AnalogSensor::AnalogSensor(gpio_num_t pin) : Sensor(),sensor_pin_(pin) {
+AnalogSensor::AnalogSensor(const std::string& name, gpio_num_t pin) : Sensor(name),sensor_pin_(pin) {
     pinMode(sensor_pin_, INPUT);
 }
 
-void AnalogSensor::ReadValue(SensorValue *value) {
+bool AnalogSensor::ReadValue(SensorValue *value) {
     Log::Debug("AnalogSensor", "Read value.");
     value->setIntValue(analogRead(sensor_pin_));
+    return true;
 }
 
 /*********** DigitalSensor **************/
-DigitalSensor::DigitalSensor(gpio_num_t pin) : Sensor(),sensor_pin_(pin) {
+DigitalSensor::DigitalSensor(const std::string& name, gpio_num_t pin) : Sensor(name),sensor_pin_(pin) {
     pinMode(sensor_pin_, INPUT);
 }
 
-void DigitalSensor::ReadValue(SensorValue *value) {
+bool DigitalSensor::ReadValue(SensorValue *value) {
     Log::Debug("DigitalSensor", "Read value.");
     value->setIntValue(digitalRead(sensor_pin_));
+    return true;
 }
