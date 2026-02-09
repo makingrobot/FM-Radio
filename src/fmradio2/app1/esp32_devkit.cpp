@@ -4,13 +4,13 @@
  * Author: Billy Zhang（vx: billyzh）
  */
 #include "config.h"
-#if FM_AUDIO_BASIC==1
+#if FM_AUDIO_ADVANCED==1 && FM_AUDIO_ADVANCED_APP1==1
 
 #include "esp32_devkit.h"
 
 #include <Arduino.h>
-#include <U8g2lib.h>
 #include <Wire.h>
+#include <U8g2lib.h>
 #include <esp_system.h>
 #include <driver/gpio.h>
 
@@ -27,33 +27,29 @@ void* create_board() {
 }
 
 ESP32_DEVKIT::ESP32_DEVKIT() : Board() {
-
     Log::Info(TAG, "===== Create Board ...... =====");
 
     //I2cDetect(GPIO_NUM_22, GPIO_NUM_21);
     InitializeI2C();
-    
     InitializeButtons();
-
     InitializeDisplay();
-
     InitializePeripherals();
 
     Log::Info( TAG, "===== Board config completed. =====");
 }
 
-void ESP32_DEVKIT::ButtonTick() {
-    for (const auto& pair : button_map()) {
-        pair.second->Tick();
-    }
-}
-
 void ESP32_DEVKIT::InitializeI2C() {
-    // TEA5767使用
+    // TEA5767
     Wire.begin(I2C_SDA_PIN, I2C_SCL_PIN);
 
     // SSD1306使用
     Wire1.begin(I2C_SDA_2_PIN, I2C_SCL_2_PIN);
+}
+
+void ESP32_DEVKIT::ButtonTick() {
+    for (auto& pair : button_map()) {
+        pair.second->Tick();
+    }
 }
 
 void ESP32_DEVKIT::InitializeButtons() {
@@ -71,15 +67,15 @@ void ESP32_DEVKIT::InitializeButtons() {
         ESP32_DEVKIT *board = (ESP32_DEVKIT *)param;
         while (1) {
             board->ButtonTick();
-            delay(10);
+            delay(1);
         }
-    }, "ButtonTick_Task", 4096, this, 1, &button_taskhandle_);
+    }, "ButtonTick_Task", 4096, this, 1, NULL);
 }
 
 void ESP32_DEVKIT::InitializeDisplay() {
 
     Log::Info( TAG, "Init ssd1306 display ......" );
-
+    
     U8G2 *u8g2 = new U8G2_SSD1306_128X64_NONAME_F_SW_I2C(
         /* rotation */ U8G2_R0, 
         /* i2c clk */ I2C_SCL_2_PIN,
@@ -90,13 +86,18 @@ void ESP32_DEVKIT::InitializeDisplay() {
 
     //u8g2_font_unifont_t_chinese2
     display_ = new U8g2Display(u8g2, DISPLAY_WIDTH, DISPLAY_HEIGHT, u8g2_font_wqy14_t_gb2312);
-
 }
 
 void ESP32_DEVKIT::InitializePeripherals() {
     
     Log::Info( TAG, "Init peripherals ......");
 
+    // ADC
+    adc_driver_ = new I2sAdcDriver(ADC_MCLK_PIN, ADC_BCLK_PIN, ADC_WS_PIN, ADC_DATA_PIN);
+
+    // DAC
+    dac_driver_ = new I2sDacDriver(DAC_MCLK_PIN, DAC_BCLK_PIN, DAC_WS_PIN, DAC_DATA_PIN);
+    
 }
 
 #endif

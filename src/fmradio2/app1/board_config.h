@@ -4,7 +4,7 @@
  * Author: Billy Zhang（billy_zh@126.com）
  */
 #include "config.h"
-#if FM_AUDIO_BASIC==1
+#if FM_AUDIO_ADVANCED==1 && FM_AUDIO_ADVANCED_APP1==1
 
 #ifndef _BOARD_CONFIG_H
 #define _BOARD_CONFIG_H
@@ -27,6 +27,16 @@
 #define DISPLAY_MIRROR_X                    false
 #define DISPLAY_MIRROR_Y                    false
 #define DISPLAY_SWAP_XY                     false
+
+#define ADC_MCLK_PIN                        GPIO_NUM_NC
+#define ADC_BCLK_PIN                        GPIO_NUM_3
+#define ADC_WS_PIN                          GPIO_NUM_4
+#define ADC_DATA_PIN                        GPIO_NUM_2
+
+#define DAC_MCLK_PIN                        GPIO_NUM_NC
+#define DAC_BCLK_PIN                        GPIO_NUM_17
+#define DAC_WS_PIN                          GPIO_NUM_18
+#define DAC_DATA_PIN                        GPIO_NUM_48
 
 #define PREV_BUTTON_PIN                     GPIO_NUM_12
 #define NEXT_BUTTON_PIN                     GPIO_NUM_13
