@@ -63,28 +63,6 @@ void RgbLed::TurnOff() {
     analogWrite(b_pin_, 0);
 }
 
-void RgbLed::BlinkOnce() {
-    Blink(1, 100);
-}
-
-void RgbLed::Blink(int times, int interval_ms) {
-    StartBlinkTask(times, interval_ms);
-}
-
-void RgbLed::StartContinuousBlink(int interval_ms) {
-    StartBlinkTask(BLINK_INFINITE, interval_ms);
-}
-
-void RgbLed::StartBlinkTask(int times, int interval_ms) {
-
-    timer_->Stop();
-
-    blink_counter_ = times * 2;
-    blink_interval_ms_ = interval_ms;
-    
-    timer_->Start(interval_ms, [this](){ OnBlinkTimer(); });
-}
-
 void RgbLed::OnBlinkTimer() {
     
     std::lock_guard<std::mutex> lock(mutex_);

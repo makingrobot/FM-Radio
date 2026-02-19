@@ -1,0 +1,89 @@
+/**
+ * ESP32-Arduino-Framework
+ * Arduino开发环境下适用于ESP32芯片系列开发板的应用开发框架。
+ * 
+ * Author: Billy Zhang（billy_zh@126.com）
+ */
+#ifndef _TASK_H
+#define _TASK_H
+
+#include <functional>
+#include <string>
+#include <freertos/FreeRTOS.h>
+
+class Task {
+public:
+    Task(const std::string& name) : name_(name) {}
+
+    /**
+     * 任务初始化函数
+     */
+    void OnInit(std::function<void()> init_function) { 
+        init_function_ = init_function; 
+    }
+
+    /**
+     * 任务循环体函数
+     */
+    void OnLoop(std::function<void()> loop_function) { 
+        loop_function_ = loop_function; 
+    }
+
+    /**
+     * 挂起任务
+     */
+    void Suspend() {
+        vTaskSuspend(task_handle_);
+    }
+
+    /**
+     * 恢复任务执行
+     */
+    void Resume() {
+        vTaskResume(task_handle_);
+    }
+
+    /**
+     * 设置优先级
+     */
+    void SetPriority(uint8_t priority) {
+        vTaskPrioritySet(task_handle_, priority);
+    }
+
+    /**
+     * 启动任务
+     */
+    int Start(uint32_t stack_depth, uint8_t priority) {
+        return xTaskCreate(
+                    [](void *parameter) {
+                        Task* task = (Task *)parameter;
+                        
+                        if (task->init_function_!=nullptr) {
+                            task->init_function_();
+                        }
+
+                        if (task->loop_function_!=nullptr) {
+                            while (1) {
+                                task->loop_function_();
+                            }
+                        }
+
+                        vTaskDelete(NULL);
+                    },                      /* 任务函数 TaskFunction_t */
+                    name_.c_str(),          /* 任务名称 const char* */
+                    stack_depth,            /* 堆栈字数 */
+                    this,                   /* 自定义参数指针 void* */
+                    priority,               /* 任务优先级 UBaseType_t */
+                    &task_handle_          /* 任务句柄指针 TaskHandle_t* */
+                );
+    }
+
+private:
+    const std::string name_;
+    std::function<void()> init_function_ = nullptr;
+    std::function<void()> loop_function_ = nullptr;
+    TaskHandle_t task_handle_;
+
+};
+
+#endif  //_TASK_H

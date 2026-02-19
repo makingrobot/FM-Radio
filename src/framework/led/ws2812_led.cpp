@@ -69,20 +69,6 @@ void Ws2812Led::TurnOff() {
     pixels_->show();
 }
 
-void Ws2812Led::BlinkOnce() {
-    Log::Debug(TAG, "blink");
-    Blink(1, 100);
-}
-
-void Ws2812Led::Blink(int times, int interval_ms) {
-    Log::Debug(TAG, "blink %d times", times);
-    StartBlinkTask(times, interval_ms);
-}
-
-void Ws2812Led::StartContinuousBlink(int interval_ms) {
-    StartBlinkTask(BLINK_INFINITE, interval_ms);
-}
-
 void Ws2812Led::StartBlinkTask(int times, int interval_ms) {
     if (pixels_ == nullptr) {
         return;

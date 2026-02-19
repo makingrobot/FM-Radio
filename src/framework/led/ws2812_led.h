@@ -19,7 +19,6 @@
 #include <Adafruit_NeoPixel.h>
 
 #include "led.h"
-#include "../sys/timer.h"
 
 /**
  * Ws2812灯珠类
@@ -32,13 +31,9 @@ public:
 
     void TurnOn() override;
     void TurnOff() override;
-    void BlinkOnce() override;
-    void Blink(int times, int interval_ms) override;
     void SetColor(uint8_t r, uint8_t g, uint8_t b) override;
-
     void SetBrightness(uint8_t brightness) override { }
-    void OnBlinkTimer();
-
+    
     uint8_t num_pixels() const { return num_pixels_; }
     
     /**
@@ -46,6 +41,10 @@ public:
      */
     void SetLightNo(const std::vector<uint8_t>& light_set);
     
+protected:
+    void OnBlinkTimer() override;
+    void StartBlinkTask(int times, int interval_ms) override;
+
 private:
     const gpio_num_t pin_;
     const uint8_t num_pixels_;
@@ -54,13 +53,7 @@ private:
     std::mutex mutex_;
     TaskHandle_t blink_task_ = nullptr;
     uint8_t r_ = 0, g_ = 0, b_ = 0;
-    int blink_counter_ = 0;
-    int blink_interval_ms_ = 0;
-    Timer* timer_ = nullptr;
     Adafruit_NeoPixel *pixels_ = nullptr;
-
-    void StartContinuousBlink(int interval_ms);
-    void StartBlinkTask(int times, int interval_ms);
 
     void Stop();
     

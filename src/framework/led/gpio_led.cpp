@@ -65,28 +65,6 @@ void GpioLed::TurnOff() {
     }
 }
 
-void GpioLed::BlinkOnce() {
-    Blink(1, 100);
-}
-
-void GpioLed::Blink(int times, int interval_ms) {
-    StartBlinkTask(times, interval_ms);
-}
-
-void GpioLed::StartContinuousBlink(int interval_ms) {
-    StartBlinkTask(BLINK_INFINITE, interval_ms);
-}
-
-void GpioLed::StartBlinkTask(int times, int interval_ms) {
-
-    timer_->Stop();
-
-    blink_counter_ = times * 2;
-    blink_interval_ms_ = interval_ms;
-    
-    timer_->Start(interval_ms, [this](){ OnBlinkTimer(); });
-}
-
 void GpioLed::OnBlinkTimer() {
     
     std::lock_guard<std::mutex> lock(mutex_);
