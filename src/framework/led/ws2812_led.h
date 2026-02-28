@@ -11,14 +11,13 @@
 #define _WS2812_LED_H_
 
 #include <driver/gpio.h>
-#include <atomic>
-#include <mutex>
 #include <vector>
 
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
 
 #include "led.h"
+#include "../sys/mutex.h"
 
 /**
  * Ws2812灯珠类
@@ -50,8 +49,7 @@ private:
     const uint8_t num_pixels_;
     std::vector<uint8_t> light_set_ = { 0 };  // 默认只使用第1个灯珠
 
-    std::mutex mutex_;
-    TaskHandle_t blink_task_ = nullptr;
+    Mutex *mutex_;
     uint8_t r_ = 0, g_ = 0, b_ = 0;
     Adafruit_NeoPixel *pixels_ = nullptr;
 

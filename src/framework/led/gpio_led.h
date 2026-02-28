@@ -13,8 +13,8 @@
 #include "led.h"
 #include <driver/gpio.h>
 #include <atomic>
-#include <mutex>
 #include <cstdint>
+#include "../sys/mutex.h"
 
 /**
  * 单色LED
@@ -37,7 +37,7 @@ protected:
     const bool pwm_ = false;
     const bool output_invert_ = false;
     
-    std::mutex mutex_;
+    Mutex *mutex_ = nullptr;
     uint8_t brightness_ = 255;
 
 };

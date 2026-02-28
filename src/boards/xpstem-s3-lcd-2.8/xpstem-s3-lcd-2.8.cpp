@@ -108,7 +108,7 @@ void XPSTEM_S3_LCD_2_80::InitializeButtons() {
         ButtonTick();
         vTaskDelay(pdMS_TO_TICKS(2)); //2ms
     });
-    buttontick_task_->Start(2048, 1);
+    buttontick_task_->Start(2048, tskIDLE_PRIORITY + 1);
 }
 
 void XPSTEM_S3_LCD_2_80::InitializeFt6336TouchPad() {

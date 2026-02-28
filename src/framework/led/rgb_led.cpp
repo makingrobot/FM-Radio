@@ -7,10 +7,12 @@
 #include "config.h"
 #if CONFIG_USE_LED_RGB==1
 
+#include <Arduino.h>
+
 #include "rgb_led.h"
 #include "../app/application.h"
 #include "../sys/log.h"
-#include <Arduino.h>
+#include "../sys/mutex/std_mutex.h"
 
 #define TAG "RgbLed"
 
@@ -28,6 +30,7 @@ RgbLed::RgbLed(gpio_num_t r_pin, gpio_num_t g_pin, gpio_num_t b_pin, bool output
     pinMode(g_pin, OUTPUT);
     pinMode(b_pin, OUTPUT);
 
+    mutex_ = new StdMutex();
     timer_ = TimerFactory::CreateTimer("Rgb_Led");
 }
 
@@ -44,41 +47,49 @@ void RgbLed::SetColor(uint8_t r, uint8_t g, uint8_t b) {
 }
 
 void RgbLed::TurnOn() {
-    std::lock_guard<std::mutex> lock(mutex_);
-    blink_counter_ = 0;
-    timer_->Stop();
+    MutexGuard lock(mutex_);
+    if (lock.IsLocked())
+    {
+        blink_counter_ = 0;
+        timer_->Stop();
 
-    analogWrite(r_pin_, r_val_);
-    analogWrite(g_pin_, g_val_);
-    analogWrite(b_pin_, b_val_);
-}
-
-void RgbLed::TurnOff() {
-    std::lock_guard<std::mutex> lock(mutex_);
-    blink_counter_ = 0;
-    timer_->Stop();
-
-    analogWrite(r_pin_, 0);
-    analogWrite(g_pin_, 0);
-    analogWrite(b_pin_, 0);
-}
-
-void RgbLed::OnBlinkTimer() {
-    
-    std::lock_guard<std::mutex> lock(mutex_);
-    blink_counter_--;
-    if (blink_counter_ & 1) {
         analogWrite(r_pin_, r_val_);
         analogWrite(g_pin_, g_val_);
         analogWrite(b_pin_, b_val_);
-    } else {
+    }
+}
+
+void RgbLed::TurnOff() {
+    MutexGuard lock(mutex_);
+    if (lock.IsLocked())
+    {
+        blink_counter_ = 0;
+        timer_->Stop();
+
         analogWrite(r_pin_, 0);
         analogWrite(g_pin_, 0);
         analogWrite(b_pin_, 0);
     }
+}
 
-    if (blink_counter_ == 0) {
-        timer_->Stop();
+void RgbLed::OnBlinkTimer() {
+    MutexGuard lock(mutex_);
+    if (lock.IsLocked())
+    {
+        blink_counter_--;
+        if (blink_counter_ & 1) {
+            analogWrite(r_pin_, r_val_);
+            analogWrite(g_pin_, g_val_);
+            analogWrite(b_pin_, b_val_);
+        } else {
+            analogWrite(r_pin_, 0);
+            analogWrite(g_pin_, 0);
+            analogWrite(b_pin_, 0);
+        }
+
+        if (blink_counter_ == 0) {
+            timer_->Stop();
+        }
     }
 }
 

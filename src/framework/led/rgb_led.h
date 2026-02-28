@@ -12,9 +12,8 @@
 
 #include "led.h"
 #include <driver/gpio.h>
-#include <atomic>
-#include <mutex>
 #include <cstdint>
+#include "../sys/mutex.h"
 
 /**
  * 三色LED
@@ -38,7 +37,7 @@ protected:
     const gpio_num_t b_pin_;
     const bool output_invert_ = false;
 
-    std::mutex mutex_;
+    Mutex *mutex_;
     uint8_t r_val_ = 0;
     uint8_t g_val_ = 0;
     uint8_t b_val_ = 0;

@@ -22,11 +22,21 @@ public:
         init_function_ = init_function; 
     }
 
+    void OnInit(std::function<void(void*)> init_param_function, void* parameter) { 
+        init_param_function_ = init_param_function; 
+        init_parameter_ = parameter;
+    }
+
     /**
      * 任务循环体函数
      */
     void OnLoop(std::function<void()> loop_function) { 
         loop_function_ = loop_function; 
+    }
+
+    void OnLoop(std::function<void(void*)> loop_param_function, void* parameter) { 
+        loop_param_function_ = loop_param_function; 
+        loop_parameter_ = parameter;
     }
 
     /**
@@ -58,11 +68,17 @@ public:
                     [](void *parameter) {
                         Task* task = (Task *)parameter;
                         
-                        if (task->init_function_!=nullptr) {
+                        if (task->init_param_function_!=nullptr) {
+                            task->init_param_function_(task->init_parameter_);
+                        } else if (task->init_function_!=nullptr) {
                             task->init_function_();
                         }
 
-                        if (task->loop_function_!=nullptr) {
+                        if (task->loop_param_function_!=nullptr) {
+                            while (1) {
+                                task->loop_param_function_(task->loop_parameter_);
+                            }
+                        } else if (task->loop_function_!=nullptr) {
                             while (1) {
                                 task->loop_function_();
                             }
@@ -80,8 +96,15 @@ public:
 
 private:
     const std::string name_;
+    
     std::function<void()> init_function_ = nullptr;
+    std::function<void(void*)> init_param_function_ = nullptr;
+    void* init_parameter_;
+
     std::function<void()> loop_function_ = nullptr;
+    std::function<void(void*)> loop_param_function_ = nullptr;
+    void* loop_parameter_;
+
     TaskHandle_t task_handle_;
 
 };
