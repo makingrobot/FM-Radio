@@ -67,13 +67,12 @@ void ESP32_DEVKIT::InitializeButtons() {
     next_button->BindAction(ButtonAction::Click);
     AddButton(next_button);
 
-    xTaskCreate([](void* param) {
-        ESP32_DEVKIT *board = (ESP32_DEVKIT *)param;
-        while (1) {
-            board->ButtonTick();
-            delay(10);
-        }
-    }, "ButtonTick_Task", 4096, this, 1, &button_taskhandle_);
+    buttontick_task_ = new Task("ButtonTick_Task");
+    buttontick_task_->OnLoop([this](){
+        ButtonTick();
+        delay(1);
+    });
+    buttontick_task_->Start(4096, tskIDLE_PRIORITY + 1);
 }
 
 void ESP32_DEVKIT::InitializeDisplay() {

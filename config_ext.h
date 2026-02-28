@@ -1,8 +1,8 @@
 #ifndef _CONFIG_EXT_H
 #define _CONFIG_EXT_H
 
-#define FM_AUDIO_BASIC          0
-#define FM_AUDIO_ADVANCED       1
+#define FM_AUDIO_BASIC          1
+#define FM_AUDIO_ADVANCED       0
 
 #if FM_AUDIO_ADVANCED==1
 #define FM_AUDIO_ADVANCED_APP1  1

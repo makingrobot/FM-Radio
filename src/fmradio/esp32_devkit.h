@@ -10,14 +10,13 @@
 #define _ESP32_DEVKIT_H
 
 #include <driver/gpio.h>
-#include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
 
 #include "src/framework/sys/log.h"
 #include "src/framework/app/application.h"
 #include "src/framework/board/board.h"
 #include "src/framework/display/display.h"
 #include "src/framework/led/led.h"
+#include "src/framework/sys/task.h"
 
 #include "board_config.h"
 
@@ -27,7 +26,7 @@ static const std::string kNextButton = "next_button";
 class ESP32_DEVKIT : public Board {
 private:
     Display *display_ = nullptr;
-    TaskHandle_t button_taskhandle_;
+    Task* buttontick_task_;
 
     void InitializeI2C();
     void InitializeButtons();
