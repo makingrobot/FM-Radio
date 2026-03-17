@@ -4,7 +4,7 @@
  * Author: Billy Zhang（vx: billyzh）
  */
 #include "config.h"
-#if FM_AUDIO_ADVANCED==1 && FM_AUDIO_ADVANCED_APP1==1
+#if FM_AUDIO_ADVANCED==1 && FM_AUDIO_ADVANCED_APP2==1
 
 #ifndef _ESP32_DEVKIT_H
 #define _ESP32_DEVKIT_H
@@ -18,9 +18,9 @@
 #include "src/framework/board/board.h"
 #include "src/framework/board/button.h"
 #include "src/framework/display/display.h"
-#include "src/framework/audio/audio_codec.h"
 #include "src/framework/led/led.h"
-#include "src/framework/sys/task.h"
+#include "../common/i2s_adc_driver.h"
+#include "../common/i2s_dac_driver.h"
 
 #include "board_config.h"
 
@@ -30,18 +30,20 @@ static const std::string kNextButton = "next_button";
 class ESP32_DEVKIT : public Board {
 private:
     Display *display_ = nullptr;
-    AudioCodec *audio_codec_;
-    Task *buttontick_task_;
+    I2sAdcDriver *adc_driver_;
+    I2sDacDriver *dac_driver_;
+
     void InitializeI2C();
     void InitializeButtons();
     void InitializeDisplay();
-    void InitializeAudioCodec();
+    void InitializePeripherals();
 
 public:
     ESP32_DEVKIT();
 
     Display* GetDisplay() override { return display_; }
-    AudioCodec *GetAudioCodec() { return audio_codec_; }
+    I2sAdcDriver *GetAdcDriver() { return adc_driver_; }
+    I2sDacDriver *GetDacDriver() { return dac_driver_; }
     
     void ButtonTick();
 };

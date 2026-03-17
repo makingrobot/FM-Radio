@@ -4,23 +4,23 @@
  * Author: Billy Zhang（vx: billyzh）
  */
 #include "config.h"
-#if FM_AUDIO_ADVANCED==1 && FM_AUDIO_ADVANCED_APP1==1
+#if FM_AUDIO_ADVANCED==1 && FM_AUDIO_ADVANCED_APP2==1
 
 #ifndef _RADIO_APPLICATION_H
 #define _RADIO_APPLICATION_H
 
+#include "src/framework/app/application.h"
 #include <string>
 #include <freertos/FreeRTOS.h>
 #include <freertos/queue.h>
-#include "src/framework/app/application.h"
-#include "src/framework/audio/audio_pipe.h"
-#include "src/framework/audio/input/audio_i2s_input.h"
-#include "src/framework/audio/output/audio_i2s_output.h"
 #include "../common/fm_radio.h"
 
 class RadioApplication : public Application {
 public:
     RadioApplication();
+    
+    void AudioInputTask();
+    void AudioOutputTask();
     
     bool OnPhysicalButtonEvent(const std::string& button_name, const ButtonAction action) override;
     
@@ -34,10 +34,14 @@ protected:
 private:
     void ChangeFrequency(uint8_t index);
     
+    QueueHandle_t button_queue_ = NULL;
+    QueueHandle_t audio_queue_ = NULL;
+    TaskHandle_t audio_input_taskhandle_;
+    TaskHandle_t audio_output_taskhandle_;
+
     std::string last_message_;
     FMRadio *radio_;
-    AudioPipe *pipe_;
-
+    
     uint8_t index_ = 0;
 
 

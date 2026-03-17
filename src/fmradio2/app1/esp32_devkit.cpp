@@ -17,7 +17,6 @@
 #include "src/framework/board/onebutton_impl.h"
 #include "src/framework/display/u8g2_display.h"
 #include "src/framework/sys/system_reset.h"
-#include "src/framework/board/i2c_device.h"
 #include "src/framework/led/gpio_led.h"
 
 #define TAG "ESP32_DEVKIT"
@@ -33,7 +32,7 @@ ESP32_DEVKIT::ESP32_DEVKIT() : Board() {
     InitializeI2C();
     InitializeButtons();
     InitializeDisplay();
-    InitializePeripherals();
+    InitializeAudioCodec();
 
     Log::Info( TAG, "===== Board config completed. =====");
 }
@@ -63,13 +62,12 @@ void ESP32_DEVKIT::InitializeButtons() {
     next_button->BindAction(ButtonAction::Click);
     AddButton(next_button);
 
-    xTaskCreate([](void* param) {
-        ESP32_DEVKIT *board = (ESP32_DEVKIT *)param;
-        while (1) {
-            board->ButtonTick();
-            delay(1);
-        }
-    }, "ButtonTick_Task", 4096, this, 1, NULL);
+    buttontick_task_ = new Task("ButtonTick_Task");
+    buttontick_task_->OnLoop([this](){
+        ButtonTick();
+        delay(1);
+    });
+    buttontick_task_->Start(4096, tskIDLE_PRIORITY + 1);
 }
 
 void ESP32_DEVKIT::InitializeDisplay() {
@@ -88,16 +86,12 @@ void ESP32_DEVKIT::InitializeDisplay() {
     display_ = new U8g2Display(u8g2, DISPLAY_WIDTH, DISPLAY_HEIGHT, u8g2_font_wqy14_t_gb2312);
 }
 
-void ESP32_DEVKIT::InitializePeripherals() {
+void ESP32_DEVKIT::InitializeAudioCodec() {
     
-    Log::Info( TAG, "Init peripherals ......");
+    Log::Info( TAG, "Init audio codec ......");
 
-    // ADC
-    adc_driver_ = new I2sAdcDriver(ADC_MCLK_PIN, ADC_BCLK_PIN, ADC_WS_PIN, ADC_DATA_PIN);
+    audio_codec_ = new I2sAdcDriver(DAC_BCLK_PIN, DAC_WS_PIN, DAC_DATA_PIN, ADC_BCLK_PIN, ADC_WS_PIN, ADC_DATA_PIN, MCLK_PIN);
 
-    // DAC
-    dac_driver_ = new I2sDacDriver(DAC_MCLK_PIN, DAC_BCLK_PIN, DAC_WS_PIN, DAC_DATA_PIN);
-    
 }
 
 #endif
