@@ -66,7 +66,7 @@ void ESP32_DEVKIT::InitializeButtons() {
     next_button->BindAction(ButtonAction::Click);
     AddButton(next_button);
 
-    buttontick_task_ = new Task("ButtonTick_Task");
+    buttontick_task_ = new FrtTask("ButtonTick_Task");
     buttontick_task_->OnLoop([this](){
         ButtonTick();
         delay(1);
