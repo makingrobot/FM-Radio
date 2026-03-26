@@ -10,7 +10,7 @@
 #include "src/framework/sys/log.h"
 #include "src/framework/board/board.h"
 #include "src/framework/lang/lang_zh_cn.h"
-#include "src/framework/display/u8g2_display.h"
+#include "src/framework/display/display.h"
 #include "src/framework/sys/settings.h"
 #include "esp32_devkit.h"
 
@@ -76,7 +76,7 @@ void RadioApplication::OnLoop() {
         delay(100);
     }
     
-    U8g2Display *display = (U8g2Display*)Board::GetInstance().GetDisplay();
+    Display *display = Board::GetInstance().GetDisplay();
     display->SetStatus(std::format("FM: {0}", radio_->GetFrequency() ));
     display->GetWindow()->SetText(1, std::format("RSSI: {0}", radio_->GetRSSI()) );
     display->GetWindow()->SetText(2, radio_->IsStereo() ? "STEREO " : "MONO");
