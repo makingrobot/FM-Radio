@@ -1,6 +1,8 @@
 /**
  * FM收音机
  * 
+ * 本程序可不受限制的用于学习，商业用途请联系作者。
+ * 
  * Author: Billy Zhang（vx: billyzh）
  */
 #include "config.h"
@@ -11,12 +13,13 @@
 #include "src/framework/board/board.h"
 #include "src/framework/lang/lang_zh_cn.h"
 #include "src/framework/display/u8g2_display.h"
+#include "src/framework/audio/input/audio_i2s_input.h"
+#include "src/framework/audio/output/audio_file_output.h"
+#include "src/framework/audio/output/audio_encoder_output.h"
 #include "src/framework/sys/settings.h"
 #include "esp32_devkit.h"
 
 #include <Arduino.h>
-#include <freertos/FreeRTOS.h>
-#include <freertos/queue.h>
 
 #define TAG "RadioApplication"
 
@@ -43,8 +46,7 @@ void* create_application() {
 }
 
 RadioApplication::RadioApplication() : Application() { 
-    button_queue_ = xQueueCreate(1, sizeof(uint8_t));
-    audio_queue_ = xQueueCreate(AUDIO_QUEUE_SIZE, sizeof(audio_data_t));
+    button_queue_ = new FrtQueue("button_queue_", 1, sizeof(uint8_t));
 }
 
 void RadioApplication::OnInit() {
@@ -56,24 +58,26 @@ void RadioApplication::OnInit() {
 
     radio_->SetFrequency(kFMFreq[chn_index]);
 
-    ESP32_DEVKIT *board = (ESP32_DEVKIT *)(&Board::GetInstance());
-    board->GetAdcDriver()->Init(I2S_NUM_0);
-    board->GetDacDriver()->Init(I2S_NUM_1);
+    AudioCodec *audio_codec = Board::GetInstance().GetAudioCodec();
 
-    xTaskCreate([](void* pvParam){
-        RadioApplication *app = (RadioApplication*)pvParam;
-        app->AudioInputTask();
-    }, "audio_input_task", 4096, this, 5, &audio_input_taskhandle_);
+    // 音频通道
+    // FMRadio -> ADC-I2S输入 -> Encoder -> File输出
 
-    xTaskCreate([](void* pvParam){
-        RadioApplication *app = (RadioApplication*)pvParam;
-        app->AudioOuputTask();
-    }, "audio_output_task", 4096, this, 5, &audio_ouput_taskhandle_);
+    AudioI2sInput *input = new AudioI2sInput(audio_codec);
+
+    fs::File file;
+    AudioFileOutput *file_output = new AudioFileOutput(file);
+    AudioEncoderOutput *enc_output = new AudioEncoderOutput(file_output, "wav");
+
+    pipe_ = new AudioPipe();
+    pipe_->Start(input, enc_output);
+    
+    audio_codec->EnableInput(true);
 }
 
 void RadioApplication::OnLoop() {
     uint8_t receive;
-    if (xQueueReceive(button_queue_, &receive, 0) == pdPASS) {
+    if (button_queue_->Receive(&receive)) {
         Log::Info(TAG, "receive %d", receive);
         if (receive == 1) {
             if (index_ > 0) {
@@ -111,57 +115,12 @@ bool RadioApplication::OnPhysicalButtonEvent(const std::string& button_name, con
         }
         
         if (value > 0) {
-            xQueueOverwrite(button_queue_, &value);
+            button_queue_->Overwrite(&value);
             return true;
         }
     }
 
     return Application::OnPhysicalButtonEvent(button_name, action);
-}
-
-void RadioApplication::AudioInputTask() {
-
-    uint8_t *r_buf = (uint8_t *)calloc(1, BUFF_SIZE);
-    assert(r_buf); // Check if r_buf allocation success
-    
-    ESP32_DEVKIT *board = (ESP32_DEVKIT*)&Board::GetInstance();
-
-    while (1)
-    {
-        audio_data_t audio_data = {0};
-        int ret = board->GetAdcDriver()->Read(&audio_data, r_buf);
-
-        /* Read i2s data */
-        if (ret == ESP_OK)
-        {
-            xQueueSendToBack(audio_queue_, &audio_data, pdMS_TO_TICKS(0));
-        }
-        else
-        {
-            Log::Warn(TAG, "Read Task: i2s read failed\n");
-        }
-    }
-    free(r_buf);
-    vTaskDelete(NULL);
-}
-
-void RadioApplication::AudioOutputTask() {
-    ESP32_DEVKIT *board = (ESP32_DEVKIT*)&Board::GetInstance();
-
-    while (1)
-    {
-        audio_data_t *audio_data = nullptr;
-        if (xQueueReceive(audio_queue_, audio_data, portMAX_DELAY) == pdPASS) {
-            /* Write i2s data */
-            int ret = board->GetDacDriver()->Write(audio_data);
-            if (ret != ESP_OK)
-            {
-                Log::Warn(TAG, "Write Task: i2s write failed\n");
-            }
-            free(audio_data);
-        }
-    }
-    vTaskDelete(NULL);
 }
 
 void RadioApplication::ChangeFrequency(uint8_t index) {

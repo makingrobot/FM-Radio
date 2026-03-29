@@ -1,6 +1,8 @@
 /**
  * FM收音机
  * 
+ * 本程序可不受限制的用于学习，商业用途请联系作者。
+ * 
  * Author: Billy Zhang（vx: billyzh）
  */
 #include "config.h"
@@ -12,12 +14,12 @@
 #include <Wire.h>
 #include <U8g2lib.h>
 #include <esp_system.h>
-#include <driver/gpio.h>
 
 #include "src/framework/board/onebutton_impl.h"
 #include "src/framework/display/u8g2_display.h"
 #include "src/framework/sys/system_reset.h"
 #include "src/framework/led/gpio_led.h"
+#include "src/framework/audio/codec/audio_i2s_simplex.h"
 
 #define TAG "ESP32_DEVKIT"
 
@@ -32,7 +34,7 @@ ESP32_DEVKIT::ESP32_DEVKIT() : Board() {
     InitializeI2C();
     InitializeButtons();
     InitializeDisplay();
-    InitializePeripherals();
+    InitializeAudioCodec();
 
     Log::Info( TAG, "===== Board config completed. =====");
 }
@@ -62,13 +64,12 @@ void ESP32_DEVKIT::InitializeButtons() {
     next_button->BindAction(ButtonAction::Click);
     AddButton(next_button);
 
-    xTaskCreate([](void* param) {
-        ESP32_DEVKIT *board = (ESP32_DEVKIT *)param;
-        while (1) {
-            board->ButtonTick();
-            delay(1);
-        }
-    }, "ButtonTick_Task", 4096, this, 1, NULL);
+    buttontick_task_ = new FrtTask("ButtonTick_Task");
+    buttontick_task_->OnLoop([this](){
+        ButtonTick();
+        delay(1);
+    });
+    buttontick_task_->Start(4096, tskIDLE_PRIORITY + 1);
 }
 
 void ESP32_DEVKIT::InitializeDisplay() {
@@ -88,15 +89,11 @@ void ESP32_DEVKIT::InitializeDisplay() {
     
 }
 
-void ESP32_DEVKIT::InitializePeripherals() {
+void ESP32_DEVKIT::InitializeAudioCodec() {
     
-    Log::Info( TAG, "Init peripherals ......");
+    Log::Info( TAG, "Init audio codec ......");
 
-    // ADC
-    adc_driver_ = new I2sAdcDriver(GPIO_NUM_NC, GPIO_NUM_NC, GPIO_NUM_NC, GPIO_NUM_NC);
-
-    // DAC
-    dac_driver_ = new I2sDacDriver(GPIO_NUM_NC, GPIO_NUM_NC, GPIO_NUM_NC, GPIO_NUM_NC);
+    audio_codec_ = new AudioI2sSimplexMic(ADC_BCLK_PIN, ADC_WS_PIN, ADC_DATA_PIN, MCLK_PIN);
     
 }
 

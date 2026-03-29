@@ -21,13 +21,22 @@
 #define I2C_SCL_2_PIN                       GPIO_NUM_40  //  
 #define I2C_SDA_2_PIN                       GPIO_NUM_41  //  
 
-#define OLED_I2C_ADDRESS                    0x3D
-#define DISPLAY_WIDTH                       128
-#define DISPLAY_HEIGHT                      64
+#define DISPLAY_WIDTH                       320
+#define DISPLAY_HEIGHT                      240
 #define DISPLAY_MIRROR_X                    false
 #define DISPLAY_MIRROR_Y                    false
 #define DISPLAY_SWAP_XY                     false
 #define DISPLAY_INVERT_COLOR                false
+
+#define MCLK_PIN                            GPIO_NUM_5
+
+#define ADC_BCLK_PIN                        GPIO_NUM_3
+#define ADC_WS_PIN                          GPIO_NUM_4
+#define ADC_DATA_PIN                        GPIO_NUM_2
+
+#define DAC_BCLK_PIN                        GPIO_NUM_17
+#define DAC_WS_PIN                          GPIO_NUM_18
+#define DAC_DATA_PIN                        GPIO_NUM_48
 
 #define SD_SCK_PIN                          GPIO_NUM_NC
 #define SD_MOSI_PIN                         GPIO_NUM_NC
@@ -43,7 +52,7 @@
 
 // 外设
 #define CONFIG_USE_DISPLAY                  1   // 显示
-#define CONFIG_USE_AUDIO                    0   // 音频
+#define CONFIG_USE_AUDIO                    1   // 音频
 #define CONFIG_USE_FS                       0   // 文件系统
 #define CONFIG_USE_CAMERA                   0   // 摄像头
 

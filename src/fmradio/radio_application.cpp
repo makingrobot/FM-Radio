@@ -1,6 +1,8 @@
 /**
  * FM收音机
  * 
+ * 本程序可不受限制的用于学习，商业用途请联系作者。
+ * 
  * Author: Billy Zhang（vx: billyzh）
  */
 #include "config.h"
@@ -43,8 +45,7 @@ void* create_application() {
 }
 
 RadioApplication::RadioApplication() : Application() { 
-
-    queue_ = xQueueCreate(1, sizeof(uint8_t));
+    button_queue_ = new FrtQueue("button_queue", 1, sizeof(uint8_t));
 }
 
 void RadioApplication::OnInit() {
@@ -60,7 +61,7 @@ void RadioApplication::OnInit() {
 void RadioApplication::OnLoop() {
 
     uint8_t receive;
-    if (xQueueReceive(queue_, &receive, 0) == pdPASS) {
+    if (button_queue_->Receive(&receive)) {
         Log::Info(TAG, "receive %d", receive);
         if (receive == 1) {
             if (index_ > 0) {
@@ -99,7 +100,7 @@ bool RadioApplication::OnPhysicalButtonEvent(const std::string& button_name, con
         }
         
         if (value > 0) {
-            xQueueOverwrite(queue_, &value);
+            button_queue_->Overwrite(&value);
             return true;
         }
     }

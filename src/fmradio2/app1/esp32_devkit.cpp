@@ -1,6 +1,8 @@
 /**
  * FM收音机
  * 
+ * 本程序可不受限制的用于学习，商业用途请联系作者。
+ * 
  * Author: Billy Zhang（vx: billyzh）
  */
 #include "config.h"
@@ -12,12 +14,12 @@
 #include <Wire.h>
 #include <U8g2lib.h>
 #include <esp_system.h>
-#include <driver/gpio.h>
 
 #include "src/framework/board/onebutton_impl.h"
 #include "src/framework/display/u8g2_display.h"
 #include "src/framework/sys/system_reset.h"
 #include "src/framework/led/gpio_led.h"
+#include "src/framework/audio/codec/audio_i2s_complex.h"
 
 #define TAG "ESP32_DEVKIT"
 
@@ -62,7 +64,7 @@ void ESP32_DEVKIT::InitializeButtons() {
     next_button->BindAction(ButtonAction::Click);
     AddButton(next_button);
 
-    buttontick_task_ = new Task("ButtonTick_Task");
+    buttontick_task_ = new FrtTask("ButtonTick_Task");
     buttontick_task_->OnLoop([this](){
         ButtonTick();
         delay(1);
@@ -90,7 +92,8 @@ void ESP32_DEVKIT::InitializeAudioCodec() {
     
     Log::Info( TAG, "Init audio codec ......");
 
-    audio_codec_ = new I2sAdcDriver(DAC_BCLK_PIN, DAC_WS_PIN, DAC_DATA_PIN, ADC_BCLK_PIN, ADC_WS_PIN, ADC_DATA_PIN, MCLK_PIN);
+    audio_codec_ = new AudioI2sComplex(DAC_BCLK_PIN, DAC_WS_PIN, DAC_DATA_PIN, 
+            ADC_BCLK_PIN, ADC_WS_PIN, ADC_DATA_PIN, MCLK_PIN);
 
 }
 

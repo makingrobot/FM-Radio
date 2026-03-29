@@ -1,6 +1,8 @@
 /**
  * FM收音机
  * 
+ * 本程序可不受限制的用于学习，商业用途请联系作者。
+ * 
  * Author: Billy Zhang（vx: billyzh）
  */
 #include "config.h"
@@ -10,8 +12,6 @@
 #define _ESP32_DEVKIT_H
 
 #include <driver/gpio.h>
-#include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
 
 #include "src/framework/sys/log.h"
 #include "src/framework/app/application.h"
@@ -20,7 +20,7 @@
 #include "src/framework/display/display.h"
 #include "src/framework/audio/audio_codec.h"
 #include "src/framework/led/led.h"
-#include "src/framework/sys/task.h"
+#include "src/framework/sys/frt_task.h"
 
 #include "board_config.h"
 
@@ -31,7 +31,8 @@ class ESP32_DEVKIT : public Board {
 private:
     Display *display_ = nullptr;
     AudioCodec *audio_codec_;
-    Task *buttontick_task_;
+    FrtTask *buttontick_task_;
+
     void InitializeI2C();
     void InitializeButtons();
     void InitializeDisplay();

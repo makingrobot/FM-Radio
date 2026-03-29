@@ -1,6 +1,8 @@
 /**
  * FM收音机
  * 
+ * 本程序可不受限制的用于学习，商业用途请联系作者。
+ * 
  * Author: Billy Zhang（vx: billyzh）
  */
 #include "config.h"
@@ -10,17 +12,15 @@
 #define _ESP32_DEVKIT_H
 
 #include <driver/gpio.h>
-#include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
 
 #include "src/framework/sys/log.h"
 #include "src/framework/app/application.h"
 #include "src/framework/board/board.h"
 #include "src/framework/board/button.h"
 #include "src/framework/display/display.h"
+#include "src/framework/audio/audio_codec.h"
 #include "src/framework/led/led.h"
-#include "../common/i2s_adc_driver.h"
-#include "../common/i2s_dac_driver.h"
+#include "src/framework/sys/frt_task.h"
 
 #include "board_config.h"
 
@@ -30,20 +30,19 @@ static const std::string kNextButton = "next_button";
 class ESP32_DEVKIT : public Board {
 private:
     Display *display_ = nullptr;
-    I2sAdcDriver *adc_driver_;
-    I2sDacDriver *dac_driver_;
+    AudioCodec *audio_codec_;
+    FrtTask *buttontick_task_;
 
     void InitializeI2C();
     void InitializeButtons();
     void InitializeDisplay();
-    void InitializePeripherals();
+    void InitializeAudioCodec();
 
 public:
     ESP32_DEVKIT();
 
     Display* GetDisplay() override { return display_; }
-    I2sAdcDriver *GetAdcDriver() { return adc_driver_; }
-    I2sDacDriver *GetDacDriver() { return dac_driver_; }
+    AudioCodec *GetAudioCodec() { return audio_codec_; }
     
     void ButtonTick();
 };

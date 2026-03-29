@@ -1,6 +1,8 @@
 /**
  * FM收音机
  * 
+ * 本程序可不受限制的用于学习，商业用途请联系作者。
+ * 
  * Author: Billy Zhang（vx: billyzh）
  */
 #include "config.h"
@@ -9,18 +11,16 @@
 #ifndef _RADIO_APPLICATION_H
 #define _RADIO_APPLICATION_H
 
-#include "src/framework/app/application.h"
 #include <string>
-#include <freertos/FreeRTOS.h>
-#include <freertos/queue.h>
+
+#include "src/framework/app/application.h"
+#include "src/framework/audio/audio_pipe.h"
+#include "src/framework/sys/frt_queue.h"
 #include "../common/fm_radio.h"
 
 class RadioApplication : public Application {
 public:
     RadioApplication();
-    
-    void AudioInputTask();
-    void AudioOutputTask();
     
     bool OnPhysicalButtonEvent(const std::string& button_name, const ButtonAction action) override;
     
@@ -31,19 +31,17 @@ protected:
     void OnInit() override;
     void OnLoop() override;
 
+    void OnData(const sample_data_t data);
+    
 private:
     void ChangeFrequency(uint8_t index);
     
-    QueueHandle_t button_queue_ = NULL;
-    QueueHandle_t audio_queue_ = NULL;
-    TaskHandle_t audio_input_taskhandle_;
-    TaskHandle_t audio_output_taskhandle_;
-
+    FrtQueue *button_queue_ = nullptr;
+    AudioPipe *pipe_ = nullptr;
     std::string last_message_;
     FMRadio *radio_;
     
     uint8_t index_ = 0;
-
 
 };
 
